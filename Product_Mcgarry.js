@@ -32,7 +32,7 @@ function askInput() {
       }
       //Prints lack of condition met
       if (!conditionMet) {
-        console.log("No such condition found.");
+        console.log("Condition was not met.");
       }
 
       rl.close(); //Exit after checking

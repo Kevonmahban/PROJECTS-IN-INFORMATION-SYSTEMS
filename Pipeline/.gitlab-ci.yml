@@ -1,0 +1,35 @@
+#Test stage of pipeline 
+stages:
+  - test
+
+#Runs test stage
+secret_detection:
+  stage: test
+  image: registry.gitlab.com/gitlab-org/security-products/analyzers/secrets
+
+  #Runs detection analyzer script. If no report generated, creates empty Json File to prevent errors
+  script:
+    - /analyzer run
+    - if [ ! -f gl-secret-detection-report.json ]; then echo "{}" > gl-secret-detection-report.json; fi
+
+  artifacts:
+    #Report saved as a Job artifact, marked secret detection
+    paths:
+      - gl-secret-detection-report.json
+    expire_in: 1 week  #Keeps artifacts for 1 week
+    reports:
+      secret_detection: gl-secret-detection-report.json
+
+security_scan:
+  stage: test  #Runs test stage
+  image: node:latest
+  script:
+    - ls -la  # List directory contents to check for .js files
+    - npm install jshint  # Install JSHint
+    - npx jshint *.js > jshint_report.txt || true  # Run JSHint and ignore errors
+
+  artifacts:
+    when: always
+    paths:
+      - jshint_report.txt  # Collect the JSHint report as an artifact
+  allow_failure: true
